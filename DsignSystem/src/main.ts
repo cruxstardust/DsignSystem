@@ -87,7 +87,7 @@ class DsButton extends HTMLElement {
       : {
           primary: 'border-brand bg-brand text-neutral-0 hover:border-neutral-700 hover:bg-neutral-700',
           secondary:
-            'border-info-700 bg-info-700 text-neutral-0 hover:border-info-400 hover:bg-info-400',
+            'border-info-700 bg-info-700 text-neutral-0 hover:border-info-500 hover:bg-info-500',
         }
 
     return `${base} ${sizeClasses[size]} ${colorClasses[color]}`
