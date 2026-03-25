@@ -366,7 +366,7 @@ class DsHumanMessage extends HTMLElement {
 
     const article = document.createElement('article')
     article.className =
-      'w-full max-w-3xl rounded-xl border border-info-200 bg-info-50 px-5 py-3 shadow-[0_8px_16px_-14px_rgb(17_24_39_/_10%)] md:px-6 md:py-4'
+      'w-full max-w-4xl rounded-xl border border-info-200 bg-info-50 px-5 py-3 shadow-[0_8px_16px_-14px_rgb(17_24_39_/_10%)] md:px-6 md:py-4'
 
     const meta = document.createElement('div')
     meta.className = 'mb-2 flex items-center gap-2 text-xs leading-5 text-neutral-600'
@@ -433,7 +433,7 @@ class DsBotMessage extends HTMLElement {
 
     const article = document.createElement('article')
     article.className =
-      'w-full max-w-3xl rounded-xl border border-neutral-300 bg-neutral-0 px-5 py-3 shadow-[0_8px_16px_-14px_rgb(17_24_39_/_10%)] md:px-6 md:py-4'
+      'w-full max-w-4xl rounded-xl border border-neutral-300 bg-neutral-0 px-5 py-3 shadow-[0_8px_16px_-14px_rgb(17_24_39_/_10%)] md:px-6 md:py-4'
 
     const meta = document.createElement('div')
     meta.className = 'mb-2 flex items-center gap-2 text-xs leading-5 text-neutral-600'
