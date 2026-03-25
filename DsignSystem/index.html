@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>dsignsystem</title>
+  </head>
+  <body>
+    <section class="grid min-h-screen md:grid-cols-[minmax(260px,320px)_1fr]">
+      <aside
+        class="grid content-start gap-8 border-b border-neutral-200 bg-neutral-50 p-6 shadow-[0_10px_24px_-20px_rgb(30_30_30_/_25%)] md:border-r md:border-b-0 md:shadow-[12px_0_24px_-20px_rgb(30_30_30_/_20%)]"
+        aria-label="Primary navigation"
+      >
+        <div class="grid gap-2">
+          <p class="m-0 text-sm font-bold uppercase tracking-[0.08em] text-neutral-700">Dsign System</p>
+          <h2>Workspace</h2>
+          <p class="text-neutral-700">Simple static sidebar with system tokens.</p>
+        </div>
+
+        <nav class="grid gap-2.5" aria-label="Sidebar links">
+          <a class="rounded-md px-2.5 py-2 font-semibold no-underline text-neutral-900 hover:bg-neutral-100 hover:text-brand" href="#">Overview</a>
+          <a class="rounded-md px-2.5 py-2 font-semibold no-underline text-neutral-900 hover:bg-neutral-100 hover:text-brand" href="#">Projects</a>
+          <a class="rounded-md px-2.5 py-2 font-semibold no-underline text-neutral-900 hover:bg-neutral-100 hover:text-brand" href="#">Reports</a>
+          <a class="rounded-md px-2.5 py-2 font-semibold no-underline text-neutral-900 hover:bg-neutral-100 hover:text-brand" href="#">Settings</a>
+        </nav>
+
+        <div class="grid gap-3" aria-label="Actions">
+          <ds-button size="small" color="primary">Small Primary</ds-button>
+          <ds-button size="medium" color="primary">Medium Primary</ds-button>
+          <ds-button size="large" color="secondary">Large Secondary</ds-button>
+          <ds-button size="medium" color="primary" outlined>Primary Outlined</ds-button>
+          <ds-button size="medium" color="secondary" outlined>Secondary Outlined</ds-button>
+        </div>
+      </aside>
+
+      <main class="main-pattern flex min-h-screen flex-col p-8" aria-label="Preview area">
+        <h1>Design System Preview</h1>
+        <p>
+          Sidebar is intentionally static and demonstrates color, spacing, typography,
+          and button variants from your CSS design foundation.
+        </p>
+
+        <div class="mt-10 w-full max-w-3xl">
+          <ds-chat-input placeholder="Message Dsign AI..."></ds-chat-input>
+        </div>
+      </main>
+    </section>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
