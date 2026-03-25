@@ -1,9 +1,67 @@
 import './style.css'
 import { marked } from 'marked'
+import {
+  CircleCheck,
+  CircleX,
+  Copy,
+  createIcons,
+  Info,
+  Mic,
+  Paperclip,
+  SendHorizontal,
+  ThumbsDown,
+  ThumbsUp,
+  TriangleAlert,
+} from 'lucide'
 
 type ButtonSize = 'small' | 'medium' | 'large'
 type ButtonColor = 'primary' | 'secondary'
 type AlertVariant = 'success' | 'info' | 'warning' | 'danger'
+type IconName =
+  | 'paperclip'
+  | 'mic'
+  | 'send-horizontal'
+  | 'circle-check'
+  | 'triangle-alert'
+  | 'circle-x'
+  | 'info'
+  | 'copy'
+  | 'thumbs-up'
+  | 'thumbs-down'
+
+function defineElement(name: string, ctor: CustomElementConstructor): void {
+  if (!customElements.get(name)) {
+    customElements.define(name, ctor)
+  }
+}
+
+function iconTag(name: IconName, className: string): string {
+  return `<i data-lucide="${name}" class="${className}" aria-hidden="true"></i>`
+}
+
+const lucideIcons = {
+  CircleCheck,
+  CircleX,
+  Copy,
+  Info,
+  Mic,
+  Paperclip,
+  SendHorizontal,
+  ThumbsDown,
+  ThumbsUp,
+  TriangleAlert,
+}
+
+function hydrateIcons(root: Document | Element | DocumentFragment = document): void {
+  createIcons({
+    icons: lucideIcons,
+    root,
+    attrs: {
+      'aria-hidden': 'true',
+      focusable: 'false',
+    },
+  })
+}
 
 class DsButton extends HTMLElement {
   private buttonEl: HTMLButtonElement | null = null
@@ -95,7 +153,7 @@ class DsButton extends HTMLElement {
   }
 }
 
-customElements.define('ds-button', DsButton)
+defineElement('ds-button', DsButton)
 
 class DsChatInput extends HTMLElement {
   private rendered = false
@@ -126,9 +184,7 @@ class DsChatInput extends HTMLElement {
               aria-label="Attach file"
               class="inline-flex h-9 w-9 items-center justify-center rounded-md text-neutral-700 transition-colors duration-150 hover:bg-neutral-100 hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21.44 11.05 12.25 20.24a6 6 0 1 1-8.49-8.49l9.2-9.2a4 4 0 0 1 5.65 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
-              </svg>
+              ${iconTag('paperclip', 'h-4 w-4')}
             </button>
 
             <button
@@ -136,11 +192,7 @@ class DsChatInput extends HTMLElement {
               aria-label="Voice input"
               class="inline-flex h-9 w-9 items-center justify-center rounded-md text-neutral-700 transition-colors duration-150 hover:bg-neutral-100 hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 1 0 6 0V5a3 3 0 0 0-3-3Z"/>
-                <path d="M19 11a7 7 0 1 1-14 0"/>
-                <path d="M12 18v4"/>
-              </svg>
+              ${iconTag('mic', 'h-4 w-4')}
             </button>
           </div>
 
@@ -149,19 +201,18 @@ class DsChatInput extends HTMLElement {
             class="inline-flex items-center gap-2 rounded-[0.5rem] border border-brand bg-brand px-5 py-2.5 text-sm font-semibold text-neutral-0 transition-colors duration-150 hover:border-neutral-700 hover:bg-neutral-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
           >
             Send
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M3 12 20 4l-5 8 5 8L3 12Z"/>
-            </svg>
+            ${iconTag('send-horizontal', 'h-3.5 w-3.5')}
           </button>
         </div>
       </div>
     `
 
+    hydrateIcons(this)
     this.rendered = true
   }
 }
 
-customElements.define('ds-chat-input', DsChatInput)
+defineElement('ds-chat-input', DsChatInput)
 
 class DsAlert extends HTMLElement {
   private rendered = false
@@ -225,7 +276,8 @@ class DsAlert extends HTMLElement {
 
     this.iconEl.className =
       `mt-0.5 inline-flex h-9 w-9 items-center justify-center rounded-full border ${config.icon}`
-    this.iconEl.innerHTML = config.iconSvg
+    this.iconEl.innerHTML = iconTag(config.iconName, 'h-4 w-4')
+    hydrateIcons(this.iconEl)
 
     this.titleEl.className = `m-0 text-sm font-semibold ${config.title}`
     this.titleEl.textContent = title
@@ -245,7 +297,7 @@ class DsAlert extends HTMLElement {
     surface: string
     icon: string
     title: string
-    iconSvg: string
+    iconName: IconName
   } {
     switch (variant) {
       case 'success':
@@ -254,8 +306,7 @@ class DsAlert extends HTMLElement {
           surface: 'border-success-400 bg-success-50',
           icon: 'border-success-400/45 bg-success-50 text-success-700',
           title: 'text-success-700',
-          iconSvg:
-            '<svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 5 5L20 7"/></svg>',
+          iconName: 'circle-check',
         }
       case 'warning':
         return {
@@ -263,8 +314,7 @@ class DsAlert extends HTMLElement {
           surface: 'border-warning-400 bg-warning-50',
           icon: 'border-warning-400/45 bg-warning-50 text-warning-700',
           title: 'text-warning-700',
-          iconSvg:
-            '<svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3l-8.47-14.14a2 2 0 0 0-3.42 0Z"/></svg>',
+          iconName: 'triangle-alert',
         }
       case 'danger':
         return {
@@ -272,8 +322,7 @@ class DsAlert extends HTMLElement {
           surface: 'border-danger-400 bg-danger-50',
           icon: 'border-danger-400/45 bg-danger-50 text-danger-700',
           title: 'text-danger-700',
-          iconSvg:
-            '<svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>',
+          iconName: 'circle-x',
         }
       case 'info':
       default:
@@ -282,16 +331,15 @@ class DsAlert extends HTMLElement {
           surface: 'border-info-400 bg-info-50',
           icon: 'border-info-400/45 bg-info-50 text-info-700',
           title: 'text-info-700',
-          iconSvg:
-            '<svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>',
+          iconName: 'info',
         }
     }
   }
 }
 
-customElements.define('ds-alert', DsAlert)
+defineElement('ds-alert', DsAlert)
 
-function messageActionButton(icon: string, label: string, tone: 'neutral' | 'info' = 'neutral'): string {
+function messageActionButton(iconName: IconName, label: string, tone: 'neutral' | 'info' = 'neutral'): string {
   const toneHover = tone === 'info' ? 'hover:bg-info-100' : 'hover:bg-neutral-100'
 
   return `
@@ -300,31 +348,10 @@ function messageActionButton(icon: string, label: string, tone: 'neutral' | 'inf
       aria-label="${label}"
       class="inline-flex h-7 w-7 items-center justify-center rounded-md text-neutral-700 transition-colors duration-150 ${toneHover} hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
     >
-      ${icon}
+      ${iconTag(iconName, 'h-3.5 w-3.5')}
     </button>
   `
 }
-
-const copyIcon = `
-  <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-    <rect x="9" y="9" width="13" height="13" rx="2"></rect>
-    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-  </svg>
-`
-
-const likeIcon = `
-  <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-    <path d="M7 10v12"></path>
-    <path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.95 2.45l-1.35 6A2 2 0 0 1 18.48 20H7V10l4.76-7.14A1 1 0 0 1 13.52 4z"></path>
-  </svg>
-`
-
-const dislikeIcon = `
-  <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-    <path d="M17 14V2"></path>
-    <path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.95-2.45l1.35-6A2 2 0 0 1 5.52 4H17v10l-4.76 7.14A1 1 0 0 1 10.48 20z"></path>
-  </svg>
-`
 
 function normalizeMarkdownSource(source: string): string {
   const lines = source.replace(/\r\n/g, '\n').split('\n')
@@ -381,9 +408,9 @@ class DsHumanMessage extends HTMLElement {
     const actions = document.createElement('div')
     actions.className = 'mt-1 flex items-center gap-1'
     actions.innerHTML = [
-      messageActionButton(copyIcon, 'Copy message', 'info'),
-      messageActionButton(likeIcon, 'Like message', 'info'),
-      messageActionButton(dislikeIcon, 'Dislike message', 'info'),
+      messageActionButton('copy', 'Copy message', 'info'),
+      messageActionButton('thumbs-up', 'Like message', 'info'),
+      messageActionButton('thumbs-down', 'Dislike message', 'info'),
     ].join('')
 
     article.append(meta, message, actions)
@@ -393,6 +420,7 @@ class DsHumanMessage extends HTMLElement {
     this.authorEl = author
     this.timeEl = time
     this.rendered = true
+    hydrateIcons(article)
   }
 
   private update(): void {
@@ -404,7 +432,7 @@ class DsHumanMessage extends HTMLElement {
   }
 }
 
-customElements.define('ds-human-message', DsHumanMessage)
+defineElement('ds-human-message', DsHumanMessage)
 
 class DsBotMessage extends HTMLElement {
   private rendered = false
@@ -452,9 +480,9 @@ class DsBotMessage extends HTMLElement {
     const actions = document.createElement('div')
     actions.className = 'mt-1 flex items-center gap-1'
     actions.innerHTML = [
-      messageActionButton(copyIcon, 'Copy message'),
-      messageActionButton(likeIcon, 'Like message'),
-      messageActionButton(dislikeIcon, 'Dislike message'),
+      messageActionButton('copy', 'Copy message'),
+      messageActionButton('thumbs-up', 'Like message'),
+      messageActionButton('thumbs-down', 'Dislike message'),
     ].join('')
 
     article.append(meta, message, actions)
@@ -464,6 +492,7 @@ class DsBotMessage extends HTMLElement {
     this.authorEl = author
     this.timeEl = time
     this.rendered = true
+    hydrateIcons(article)
   }
 
   private update(): void {
@@ -475,4 +504,4 @@ class DsBotMessage extends HTMLElement {
   }
 }
 
-customElements.define('ds-bot-message', DsBotMessage)
+defineElement('ds-bot-message', DsBotMessage)
