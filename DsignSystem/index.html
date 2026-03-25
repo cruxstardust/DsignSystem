@@ -7,9 +7,9 @@
     <title>dsignsystem</title>
   </head>
   <body>
-    <section class="grid min-h-screen w-full md:grid-cols-[260px_minmax(0,1fr)]">
+    <section class="grid h-dvh w-full overflow-hidden md:grid-cols-[260px_minmax(0,1fr)]">
       <aside
-        class="grid content-start gap-8 border-b border-neutral-200 bg-neutral-50 p-6 shadow-[0_14px_24px_-14px_rgb(17_24_39_/_18%)] md:border-r md:border-r-neutral-300 md:border-b-0 md:shadow-[12px_0_24px_-14px_rgb(17_24_39_/_16%)]"
+        class="grid content-start gap-8 overflow-y-auto border-b border-neutral-200 bg-neutral-50 p-6 shadow-[0_14px_24px_-14px_rgb(17_24_39_/_18%)] md:border-r md:border-r-neutral-300 md:border-b-0 md:shadow-[12px_0_24px_-14px_rgb(17_24_39_/_16%)]"
         aria-label="Primary navigation"
       >
         <div class="grid gap-2">
@@ -34,67 +34,71 @@
         </div>
       </aside>
 
-      <main class="main-pattern min-h-screen p-8" aria-label="Preview area">
-        <div class="mx-auto w-full max-w-6xl">
-          <h1>Design System Preview</h1>
-          <p>
-            Sidebar is intentionally static and demonstrates color, spacing, typography,
-            and button variants from your CSS design foundation.
-          </p>
+      <main class="main-pattern h-full overflow-hidden" aria-label="Preview area">
+        <div class="flex h-full w-full flex-col">
+          <section class="min-h-0 flex-1 overflow-y-auto" aria-label="Chat layout">
+            <div class="mx-auto grid w-full max-w-4xl content-start gap-4 px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
+              <header class="mb-2">
+                <h1>Design System Preview</h1>
+                <p>
+                  Sidebar is intentionally static and demonstrates color, spacing, typography,
+                  and button variants from your CSS design foundation.
+                </p>
+              </header>
 
-          <section class="mt-8 grid w-full max-w-3xl gap-3" aria-label="Alert examples">
-            <ds-alert variant="success" title="Success">
-              Account settings were saved successfully.
-            </ds-alert>
-            <ds-alert variant="info" title="Info">
-              New documentation updates are available for this workspace.
-            </ds-alert>
-            <ds-alert variant="warning" title="Warning">
-              Your session will expire soon. Save your work to avoid data loss.
-            </ds-alert>
-            <ds-alert variant="danger" title="Danger">
-              Payment failed. Update billing details to keep services active.
-            </ds-alert>
+              <ds-alert variant="success" title="Success">
+                Account settings were saved successfully.
+              </ds-alert>
+              <ds-alert variant="info" title="Info">
+                New documentation updates are available for this workspace.
+              </ds-alert>
+              <ds-alert variant="warning" title="Warning">
+                Your session will expire soon. Save your work to avoid data loss.
+              </ds-alert>
+              <ds-alert variant="danger" title="Danger">
+                Payment failed. Update billing details to keep services active.
+              </ds-alert>
+
+              <ds-bot-message author="Dsign AI" timestamp="10:14 AM">
+                ## Design Audit Summary
+
+                I reviewed your layout and prepared a concise update across spacing, hierarchy, and interaction polish.
+                You can compare this with the internal style guide at [Design Tokens Handbook](https://www.w3.org/WAI/standards-guidelines/wcag/).
+
+                ### Key Improvements
+
+                - Strengthened visual hierarchy in the sidebar and metadata rows.
+                - Improved focus treatment consistency across interactive elements.
+                - Reduced unnecessary visual weight in action controls.
+
+                ### Token Changes
+
+                | Token Group | Previous | Updated | Reason |
+                | --- | --- | --- | --- |
+                | Secondary Color | #27408B | `info-700` (OKLCH) | Better consistency with tokenized palette |
+                | Focus Outline | Blue | Brand-based | Stronger visual language alignment |
+                | Message Actions | Segmented block | Compact inline row | Lower vertical density |
+
+                ### Recommended Next Steps
+
+                1. Add a dedicated message list web-component to handle scroll and virtualization.
+                2. Introduce semantic states for action feedback (`copied`, `liked`, `disliked`).
+                3. Create a markdown style preset for long-form assistant responses.
+
+                For implementation details, see [Tailwind Theme Docs](https://tailwindcss.com/docs/theme) and
+                [Marked Documentation](https://marked.js.org/).
+              </ds-bot-message>
+              <ds-human-message author="You" timestamp="10:15 AM">
+                Great, please focus on spacing and navigation emphasis.
+              </ds-human-message>
+            </div>
           </section>
 
-          <section class="mt-8 grid w-full max-w-4xl gap-4" aria-label="Chat message examples">
-            <ds-bot-message author="Dsign AI" timestamp="10:14 AM">
-              ## Design Audit Summary
-
-              I reviewed your layout and prepared a concise update across spacing, hierarchy, and interaction polish.
-              You can compare this with the internal style guide at [Design Tokens Handbook](https://www.w3.org/WAI/standards-guidelines/wcag/).
-
-              ### Key Improvements
-
-              - Strengthened visual hierarchy in the sidebar and metadata rows.
-              - Improved focus treatment consistency across interactive elements.
-              - Reduced unnecessary visual weight in action controls.
-
-              ### Token Changes
-
-              | Token Group | Previous | Updated | Reason |
-              | --- | --- | --- | --- |
-              | Secondary Color | #27408B | `info-700` (OKLCH) | Better consistency with tokenized palette |
-              | Focus Outline | Blue | Brand-based | Stronger visual language alignment |
-              | Message Actions | Segmented block | Compact inline row | Lower vertical density |
-
-              ### Recommended Next Steps
-
-              1. Add a dedicated message list web-component to handle scroll and virtualization.
-              2. Introduce semantic states for action feedback (`copied`, `liked`, `disliked`).
-              3. Create a markdown style preset for long-form assistant responses.
-
-              For implementation details, see [Tailwind Theme Docs](https://tailwindcss.com/docs/theme) and
-              [Marked Documentation](https://marked.js.org/).
-            </ds-bot-message>
-            <ds-human-message author="You" timestamp="10:15 AM">
-              Great, please focus on spacing and navigation emphasis.
-            </ds-human-message>
+          <section class="shrink-0 py-4" aria-label="Chat input">
+            <div class="mx-auto w-full max-w-4xl px-4 sm:px-6 lg:px-8">
+              <ds-chat-input placeholder="Message Dsign AI..."></ds-chat-input>
+            </div>
           </section>
-
-          <div class="mt-10 w-full max-w-4xl">
-            <ds-chat-input placeholder="Message Dsign AI..."></ds-chat-input>
-          </div>
         </div>
       </main>
     </section>

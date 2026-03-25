@@ -168,13 +168,13 @@ class DsChatInput extends HTMLElement {
 
     this.className = 'block w-full'
     this.innerHTML = `
-      <div class="w-full rounded-2xl border border-neutral-300 border-r-neutral-400 bg-neutral-0 p-3 shadow-[0_8px_16px_-12px_rgb(17_24_39_/_14%)] transition-shadow duration-150 focus-within:ring-2 focus-within:ring-focus focus-within:ring-offset-2 focus-within:ring-offset-neutral-50 motion-reduce:transition-none">
+      <div class="w-full rounded-2xl border border-neutral-300 border-r-neutral-400 bg-neutral-0 p-2.5 shadow-[0_8px_16px_-12px_rgb(17_24_39_/_14%)] transition-shadow duration-150 focus-within:ring-2 focus-within:ring-focus focus-within:ring-offset-2 focus-within:ring-offset-neutral-50 motion-reduce:transition-none">
         <label class="sr-only" for="${textareaId}">Message</label>
         <textarea
           id="${textareaId}"
-          rows="3"
+          rows="2"
           placeholder="${placeholder}"
-          class="w-full resize-none border-0 bg-transparent p-2 text-base text-neutral-900 placeholder:text-neutral-700/70 focus:outline-none focus-visible:outline-none focus-visible:shadow-none"
+          class="w-full resize-none border-0 bg-transparent p-1.5 text-base text-neutral-900 placeholder:text-neutral-700/70 focus:outline-none focus-visible:outline-none focus-visible:shadow-none"
         ></textarea>
 
         <div class="mt-1 flex items-center justify-between gap-3">
