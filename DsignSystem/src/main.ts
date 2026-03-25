@@ -1,4 +1,5 @@
 import './style.css'
+import { marked } from 'marked'
 
 type ButtonSize = 'small' | 'medium' | 'large'
 type ButtonColor = 'primary' | 'secondary'
@@ -289,3 +290,189 @@ class DsAlert extends HTMLElement {
 }
 
 customElements.define('ds-alert', DsAlert)
+
+function messageActionButton(icon: string, label: string, tone: 'neutral' | 'info' = 'neutral'): string {
+  const toneHover = tone === 'info' ? 'hover:bg-info-100' : 'hover:bg-neutral-100'
+
+  return `
+    <button
+      type="button"
+      aria-label="${label}"
+      class="inline-flex h-7 w-7 items-center justify-center rounded-md text-neutral-700 transition-colors duration-150 ${toneHover} hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
+    >
+      ${icon}
+    </button>
+  `
+}
+
+const copyIcon = `
+  <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <rect x="9" y="9" width="13" height="13" rx="2"></rect>
+    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+  </svg>
+`
+
+const likeIcon = `
+  <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <path d="M7 10v12"></path>
+    <path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.95 2.45l-1.35 6A2 2 0 0 1 18.48 20H7V10l4.76-7.14A1 1 0 0 1 13.52 4z"></path>
+  </svg>
+`
+
+const dislikeIcon = `
+  <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <path d="M17 14V2"></path>
+    <path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.95-2.45l1.35-6A2 2 0 0 1 5.52 4H17v10l-4.76 7.14A1 1 0 0 1 10.48 20z"></path>
+  </svg>
+`
+
+function normalizeMarkdownSource(source: string): string {
+  const lines = source.replace(/\r\n/g, '\n').split('\n')
+  while (lines.length && lines[0].trim() === '') lines.shift()
+  while (lines.length && lines[lines.length - 1].trim() === '') lines.pop()
+
+  const indents = lines
+    .filter((line) => line.trim() !== '')
+    .map((line) => line.match(/^\s*/)?.[0].length ?? 0)
+  const minIndent = indents.length ? Math.min(...indents) : 0
+
+  return lines.map((line) => line.slice(minIndent)).join('\n')
+}
+
+class DsHumanMessage extends HTMLElement {
+  private rendered = false
+  private authorEl: HTMLElement | null = null
+  private timeEl: HTMLElement | null = null
+
+  static get observedAttributes(): string[] {
+    return ['author', 'timestamp']
+  }
+
+  connectedCallback(): void {
+    if (!this.rendered) {
+      this.render()
+    }
+    this.update()
+  }
+
+  attributeChangedCallback(): void {
+    this.update()
+  }
+
+  private render(): void {
+    const message = document.createElement('div')
+    const children = Array.from(this.childNodes)
+    children.forEach((node) => message.appendChild(node))
+
+    const article = document.createElement('article')
+    article.className =
+      'w-full max-w-3xl rounded-xl border border-info-200 bg-info-50 px-5 py-3 shadow-[0_8px_16px_-14px_rgb(17_24_39_/_10%)] md:px-6 md:py-4'
+
+    const meta = document.createElement('div')
+    meta.className = 'mb-2 flex items-center gap-2 text-xs leading-5 text-neutral-600'
+    const author = document.createElement('span')
+    author.className = 'font-semibold text-info-700'
+    const time = document.createElement('time')
+    time.className = 'text-neutral-600'
+    meta.append(author, time)
+
+    message.className = 'text-sm leading-7 text-neutral-900'
+
+    const actions = document.createElement('div')
+    actions.className = 'mt-1 flex items-center gap-1'
+    actions.innerHTML = [
+      messageActionButton(copyIcon, 'Copy message', 'info'),
+      messageActionButton(likeIcon, 'Like message', 'info'),
+      messageActionButton(dislikeIcon, 'Dislike message', 'info'),
+    ].join('')
+
+    article.append(meta, message, actions)
+    this.className = 'block w-full'
+    this.replaceChildren(article)
+
+    this.authorEl = author
+    this.timeEl = time
+    this.rendered = true
+  }
+
+  private update(): void {
+    if (!this.authorEl || !this.timeEl) {
+      return
+    }
+    this.authorEl.textContent = this.getAttribute('author') ?? 'You'
+    this.timeEl.textContent = this.getAttribute('timestamp') ?? ''
+  }
+}
+
+customElements.define('ds-human-message', DsHumanMessage)
+
+class DsBotMessage extends HTMLElement {
+  private rendered = false
+  private authorEl: HTMLElement | null = null
+  private timeEl: HTMLElement | null = null
+  private markdownSource = ''
+
+  static get observedAttributes(): string[] {
+    return ['author', 'timestamp']
+  }
+
+  connectedCallback(): void {
+    if (!this.rendered) {
+      this.render()
+    }
+    this.update()
+  }
+
+  attributeChangedCallback(): void {
+    this.update()
+  }
+
+  private render(): void {
+    this.markdownSource = normalizeMarkdownSource(this.textContent ?? '')
+    const message = document.createElement('div')
+
+    const article = document.createElement('article')
+    article.className =
+      'w-full max-w-3xl rounded-xl border border-neutral-300 bg-neutral-0 px-5 py-3 shadow-[0_8px_16px_-14px_rgb(17_24_39_/_10%)] md:px-6 md:py-4'
+
+    const meta = document.createElement('div')
+    meta.className = 'mb-2 flex items-center gap-2 text-xs leading-5 text-neutral-600'
+    const author = document.createElement('span')
+    author.className = 'font-semibold text-neutral-700'
+    const time = document.createElement('time')
+    time.className = 'text-neutral-600'
+    meta.append(author, time)
+
+    message.className = 'ds-markdown'
+    message.innerHTML = marked.parse(this.markdownSource, {
+      gfm: true,
+      breaks: true,
+    }) as string
+
+    const actions = document.createElement('div')
+    actions.className = 'mt-1 flex items-center gap-1'
+    actions.innerHTML = [
+      messageActionButton(copyIcon, 'Copy message'),
+      messageActionButton(likeIcon, 'Like message'),
+      messageActionButton(dislikeIcon, 'Dislike message'),
+    ].join('')
+
+    article.append(meta, message, actions)
+    this.className = 'block w-full'
+    this.replaceChildren(article)
+
+    this.authorEl = author
+    this.timeEl = time
+    this.rendered = true
+  }
+
+  private update(): void {
+    if (!this.authorEl || !this.timeEl) {
+      return
+    }
+    this.authorEl.textContent = this.getAttribute('author') ?? 'Assistant'
+    this.timeEl.textContent = this.getAttribute('timestamp') ?? ''
+  }
+}
+
+customElements.define('ds-bot-message', DsBotMessage)

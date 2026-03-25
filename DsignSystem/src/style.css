@@ -219,6 +219,112 @@
   }
 }
 
+@layer components {
+  .ds-markdown {
+    color: var(--color-neutral-900);
+    font-size: var(--text-sm);
+    line-height: 1.75;
+  }
+
+  .ds-markdown > *:last-child {
+    margin-bottom: 0;
+  }
+
+  .ds-markdown h1,
+  .ds-markdown h2 {
+    margin: 1rem 0 0.5rem;
+    font-size: var(--text-base);
+    line-height: 1.4;
+    font-weight: 600;
+    color: var(--color-neutral-900);
+  }
+
+  .ds-markdown h3,
+  .ds-markdown h4,
+  .ds-markdown h5,
+  .ds-markdown h6 {
+    margin: 1rem 0 0.5rem;
+    font-size: var(--text-sm);
+    line-height: 1.4;
+    font-weight: 600;
+    color: var(--color-neutral-900);
+  }
+
+  .ds-markdown p {
+    margin: 0 0 0.5rem;
+  }
+
+  .ds-markdown ul,
+  .ds-markdown ol {
+    margin: 0 0 0.5rem;
+    padding-left: 1.25rem;
+  }
+
+  .ds-markdown li {
+    margin-bottom: 0.25rem;
+  }
+
+  .ds-markdown a {
+    color: var(--color-info-700);
+    text-decoration-thickness: 0.08em;
+    text-underline-offset: 0.15em;
+    font-weight: 500;
+  }
+
+  .ds-markdown a:hover {
+    color: var(--color-brand);
+  }
+
+  .ds-markdown code {
+    border-radius: 0.375rem;
+    background-color: var(--color-neutral-100);
+    padding: 0.125rem 0.375rem;
+    font-size: 0.8125rem;
+    line-height: 1.4;
+  }
+
+  .ds-markdown pre {
+    margin: 0 0 0.5rem;
+    overflow-x: auto;
+    border: 1px solid var(--color-neutral-200);
+    border-radius: 0.5rem;
+    background-color: var(--color-neutral-0);
+    padding: 0.75rem;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: var(--color-neutral-900);
+  }
+
+  .ds-markdown pre code {
+    padding: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+
+  .ds-markdown table {
+    width: 100%;
+    margin: 0 0 0.5rem;
+    border-collapse: collapse;
+    overflow: hidden;
+    border: 1px solid var(--color-neutral-200);
+    border-radius: 0.5rem;
+    background-color: var(--color-neutral-0);
+  }
+
+  .ds-markdown th,
+  .ds-markdown td {
+    border-bottom: 1px solid var(--color-neutral-200);
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+  }
+
+  .ds-markdown th {
+    background-color: var(--color-neutral-50);
+    color: var(--color-neutral-700);
+    font-weight: 600;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
