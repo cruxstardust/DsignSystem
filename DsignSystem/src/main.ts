@@ -1,17 +1,22 @@
 import './style.css'
 import { marked } from 'marked'
+import embed from 'vega-embed'
 import {
+  ChartArea,
   CircleCheck,
   CircleX,
   Copy,
   createIcons,
+  Expand,
   Info,
   Mic,
   Paperclip,
+  Printer,
   SendHorizontal,
   ThumbsDown,
   ThumbsUp,
   TriangleAlert,
+  X,
 } from 'lucide'
 
 type ButtonSize = 'small' | 'medium' | 'large'
@@ -40,16 +45,20 @@ function iconTag(name: IconName, className: string): string {
 }
 
 const lucideIcons = {
+  ChartArea,
   CircleCheck,
   CircleX,
   Copy,
+  Expand,
   Info,
   Mic,
   Paperclip,
+  Printer,
   SendHorizontal,
   ThumbsDown,
   ThumbsUp,
   TriangleAlert,
+  X,
 }
 
 function hydrateIcons(root: Document | Element | DocumentFragment = document): void {
@@ -505,3 +514,165 @@ class DsBotMessage extends HTMLElement {
 }
 
 defineElement('ds-bot-message', DsBotMessage)
+
+function buildLineChartSpec(): Record<string, unknown> {
+  return {
+    $schema: 'https://vega.github.io/schema/vega-lite/v6.json',
+    autosize: { type: 'fit-x', contains: 'padding' },
+    width: 'container',
+    height: 220,
+    data: {
+      values: [
+        { month: 'Jan', revenue: 95 },
+        { month: 'Feb', revenue: 108 },
+        { month: 'Mar', revenue: 123 },
+        { month: 'Apr', revenue: 118 },
+        { month: 'May', revenue: 132 },
+        { month: 'Jun', revenue: 147 },
+      ],
+    },
+    mark: {
+      type: 'line',
+      strokeWidth: 3,
+      color: '#1E1E1E',
+      point: {
+        filled: true,
+        fill: '#27408B',
+        stroke: '#27408B',
+        size: 56,
+      },
+    },
+    encoding: {
+      x: {
+        field: 'month',
+        type: 'ordinal',
+        axis: { labelAngle: 0, title: null },
+      },
+      y: {
+        field: 'revenue',
+        type: 'quantitative',
+        axis: { title: 'Revenue (k USD)' },
+      },
+    },
+    config: {
+      background: '#FFFFFF',
+      view: { stroke: null },
+      axis: {
+        labelColor: '#4B4B4B',
+        titleColor: '#4B4B4B',
+        domainColor: '#CFCFCF',
+        tickColor: '#CFCFCF',
+        gridColor: '#EFEFEF',
+      },
+    },
+  }
+}
+
+function buildBarChartSpec(): Record<string, unknown> {
+  return {
+    $schema: 'https://vega.github.io/schema/vega-lite/v6.json',
+    autosize: { type: 'fit-x', contains: 'padding' },
+    width: 'container',
+    height: 220,
+    data: {
+      values: [
+        { region: 'North America', revenue: 520 },
+        { region: 'Europe', revenue: 380 },
+        { region: 'Asia Pacific', revenue: 265 },
+        { region: 'Latin America', revenue: 140 },
+      ],
+    },
+    mark: {
+      type: 'bar',
+      cornerRadiusEnd: 5,
+      color: '#27408B',
+    },
+    encoding: {
+      x: {
+        field: 'region',
+        type: 'nominal',
+        sort: '-y',
+        axis: { labelAngle: -12, title: null },
+      },
+      y: {
+        field: 'revenue',
+        type: 'quantitative',
+        axis: { title: 'Revenue (k USD)' },
+      },
+      tooltip: [
+        { field: 'region', type: 'nominal', title: 'Region' },
+        { field: 'revenue', type: 'quantitative', title: 'Revenue (k USD)' },
+      ],
+    },
+    config: {
+      background: '#FFFFFF',
+      view: { stroke: null },
+      axis: {
+        labelColor: '#4B4B4B',
+        titleColor: '#4B4B4B',
+        domainColor: '#CFCFCF',
+        tickColor: '#CFCFCF',
+        gridColor: '#EFEFEF',
+      },
+    },
+  }
+}
+
+async function renderVisualizationCharts(): Promise<void> {
+  const lineTarget = document.getElementById('viz-line-chart')
+  const barTarget = document.getElementById('viz-bar-chart')
+
+  if (!lineTarget || !barTarget) {
+    return
+  }
+
+  await Promise.all([
+    embed(lineTarget, buildLineChartSpec() as any, { actions: false, renderer: 'svg' }),
+    embed(barTarget, buildBarChartSpec() as any, { actions: false, renderer: 'svg' }),
+  ])
+}
+
+function setupVisualizationPanelToggle(): void {
+  const toggleButton = document.getElementById('toggle-visualization-panel')
+  const workspaceColumns = document.getElementById('workspace-columns')
+  const visualizationPanel = document.getElementById('visualization-panel')
+
+  if (!toggleButton || !workspaceColumns || !visualizationPanel) {
+    return
+  }
+
+  let isOpen = false
+  let chartsRendered = false
+
+  const setOpenState = (nextOpen: boolean): void => {
+    isOpen = nextOpen
+    visualizationPanel.classList.toggle('hidden', !nextOpen)
+    workspaceColumns.classList.toggle('grid-cols-1', !nextOpen)
+    workspaceColumns.classList.toggle('grid-cols-2', nextOpen)
+
+    toggleButton.setAttribute('aria-pressed', String(nextOpen))
+    toggleButton.setAttribute('aria-expanded', String(nextOpen))
+    toggleButton.textContent = nextOpen ? 'Hide Visualization Panel' : 'Show Visualization Panel'
+
+    if (nextOpen && !chartsRendered) {
+      requestAnimationFrame(() => {
+        void renderVisualizationCharts()
+          .then(() => {
+            chartsRendered = true
+          })
+          .catch((error: unknown) => {
+            console.error('Failed to render visualization charts.', error)
+          })
+      })
+    }
+  }
+
+  toggleButton.addEventListener('click', () => {
+    setOpenState(!isOpen)
+  })
+
+  setOpenState(false)
+}
+
+hydrateIcons(document)
+setupVisualizationPanelToggle()

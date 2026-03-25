@@ -25,6 +25,19 @@
           <a class="rounded-md px-2.5 py-2 font-semibold no-underline text-neutral-900 hover:bg-neutral-100 hover:text-brand" href="#">Settings</a>
         </nav>
 
+        <div class="grid gap-2" aria-label="Layout controls">
+          <button
+            id="toggle-visualization-panel"
+            type="button"
+            aria-pressed="false"
+            aria-expanded="false"
+            aria-controls="visualization-panel"
+            class="inline-flex w-full items-center justify-center rounded-[0.5rem] border border-info-700 bg-info-700 px-4 py-2.5 text-sm font-semibold text-neutral-0 transition-colors duration-150 hover:border-info-500 hover:bg-info-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
+          >
+            Toggle Visualization Panel
+          </button>
+        </div>
+
         <div class="grid gap-3" aria-label="Actions">
           <ds-button size="small" color="primary">Small Primary</ds-button>
           <ds-button size="medium" color="primary">Medium Primary</ds-button>
@@ -34,69 +47,147 @@
         </div>
       </aside>
 
-      <main class="main-pattern h-full overflow-hidden" aria-label="Preview area">
-        <div class="flex h-full w-full flex-col">
-          <section class="min-h-0 flex-1 overflow-y-auto" aria-label="Chat layout">
-            <div class="mx-auto grid w-full max-w-4xl content-start gap-4 px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
-              <header class="mb-2">
-                <h1>Design System Preview</h1>
-                <p>
-                  Sidebar is intentionally static and demonstrates color, spacing, typography,
-                  and button variants from your CSS design foundation.
-                </p>
-              </header>
+      <main class="h-full overflow-hidden" aria-label="Preview area">
+        <div id="workspace-columns" class="grid h-full grid-cols-1">
+          <section class="main-pattern h-full overflow-hidden" aria-label="Chat column">
+            <div class="flex h-full w-full flex-col">
+              <section class="min-h-0 flex-1 overflow-y-auto" aria-label="Chat layout">
+                <div class="mx-auto grid w-full max-w-4xl content-start gap-4 px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
+                  <header class="mb-2">
+                    <h1>Design System Preview</h1>
+                    <p>
+                      Sidebar is intentionally static and demonstrates color, spacing, typography,
+                      and button variants from your CSS design foundation.
+                    </p>
+                  </header>
 
-              <ds-alert variant="success" title="Success">
-                Account settings were saved successfully.
-              </ds-alert>
-              <ds-alert variant="info" title="Info">
-                New documentation updates are available for this workspace.
-              </ds-alert>
-              <ds-alert variant="warning" title="Warning">
-                Your session will expire soon. Save your work to avoid data loss.
-              </ds-alert>
-              <ds-alert variant="danger" title="Danger">
-                Payment failed. Update billing details to keep services active.
-              </ds-alert>
+                  <ds-alert variant="success" title="Success">
+                    Account settings were saved successfully.
+                  </ds-alert>
+                  <ds-alert variant="info" title="Info">
+                    New documentation updates are available for this workspace.
+                  </ds-alert>
+                  <ds-alert variant="warning" title="Warning">
+                    Your session will expire soon. Save your work to avoid data loss.
+                  </ds-alert>
+                  <ds-alert variant="danger" title="Danger">
+                    Payment failed. Update billing details to keep services active.
+                  </ds-alert>
 
-              <ds-bot-message author="Dsign AI" timestamp="10:14 AM">
-                ## Design Audit Summary
+                  <ds-bot-message author="Dsign AI" timestamp="10:14 AM">
+                    ## Design Audit Summary
 
-                I reviewed your layout and prepared a concise update across spacing, hierarchy, and interaction polish.
-                You can compare this with the internal style guide at [Design Tokens Handbook](https://www.w3.org/WAI/standards-guidelines/wcag/).
+                    I reviewed your layout and prepared a concise update across spacing, hierarchy, and interaction polish.
+                    You can compare this with the internal style guide at [Design Tokens Handbook](https://www.w3.org/WAI/standards-guidelines/wcag/).
 
-                ### Key Improvements
+                    ### Key Improvements
 
-                - Strengthened visual hierarchy in the sidebar and metadata rows.
-                - Improved focus treatment consistency across interactive elements.
-                - Reduced unnecessary visual weight in action controls.
+                    - Strengthened visual hierarchy in the sidebar and metadata rows.
+                    - Improved focus treatment consistency across interactive elements.
+                    - Reduced unnecessary visual weight in action controls.
 
-                ### Token Changes
+                    ### Token Changes
 
-                | Token Group | Previous | Updated | Reason |
-                | --- | --- | --- | --- |
-                | Secondary Color | #27408B | `info-700` (OKLCH) | Better consistency with tokenized palette |
-                | Focus Outline | Blue | Brand-based | Stronger visual language alignment |
-                | Message Actions | Segmented block | Compact inline row | Lower vertical density |
+                    | Token Group | Previous | Updated | Reason |
+                    | --- | --- | --- | --- |
+                    | Secondary Color | #27408B | `info-700` (OKLCH) | Better consistency with tokenized palette |
+                    | Focus Outline | Blue | Brand-based | Stronger visual language alignment |
+                    | Message Actions | Segmented block | Compact inline row | Lower vertical density |
 
-                ### Recommended Next Steps
+                    ### Recommended Next Steps
 
-                1. Add a dedicated message list web-component to handle scroll and virtualization.
-                2. Introduce semantic states for action feedback (`copied`, `liked`, `disliked`).
-                3. Create a markdown style preset for long-form assistant responses.
+                    1. Add a dedicated message list web-component to handle scroll and virtualization.
+                    2. Introduce semantic states for action feedback (`copied`, `liked`, `disliked`).
+                    3. Create a markdown style preset for long-form assistant responses.
 
-                For implementation details, see [Tailwind Theme Docs](https://tailwindcss.com/docs/theme) and
-                [Marked Documentation](https://marked.js.org/).
-              </ds-bot-message>
-              <ds-human-message author="You" timestamp="10:15 AM">
-                Great, please focus on spacing and navigation emphasis.
-              </ds-human-message>
+                    For implementation details, see [Tailwind Theme Docs](https://tailwindcss.com/docs/theme) and
+                    [Marked Documentation](https://marked.js.org/).
+                  </ds-bot-message>
+                  <ds-human-message author="You" timestamp="10:15 AM">
+                    Great, please focus on spacing and navigation emphasis.
+                  </ds-human-message>
+                </div>
+              </section>
+
+              <section class="shrink-0 py-4" aria-label="Chat input">
+                <div class="mx-auto w-full max-w-4xl px-4 sm:px-6 lg:px-8">
+                  <ds-chat-input placeholder="Message Dsign AI..."></ds-chat-input>
+                </div>
+              </section>
             </div>
           </section>
 
-          <section class="shrink-0 py-4" aria-label="Chat input">
-            <div class="mx-auto w-full max-w-4xl px-4 sm:px-6 lg:px-8">
-              <ds-chat-input placeholder="Message Dsign AI..."></ds-chat-input>
+          <section
+            id="visualization-panel"
+            class="hidden h-full overflow-y-auto border-l border-neutral-200 bg-neutral-50"
+            aria-label="Visualization panel"
+          >
+            <div class="grid w-full content-start gap-3 px-2.5 py-2.5 sm:px-3 sm:py-3">
+              <header class="flex items-center justify-between gap-3 border-b border-neutral-200 pb-3">
+                <div class="flex min-w-0 items-center gap-2.5">
+                  <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-info-200 bg-info-100 text-info-700">
+                    <i data-lucide="chart-area" class="h-5 w-5"></i>
+                  </span>
+                  <h2 class="m-0 truncate text-xl font-semibold text-neutral-900">Visualization Panel</h2>
+                </div>
+
+                <div class="flex shrink-0 items-center gap-1.5">
+                  <button
+                    type="button"
+                    aria-label="Copy"
+                    class="inline-flex h-8 w-8 items-center justify-center rounded-md border border-neutral-300 bg-neutral-0 text-neutral-700 transition-colors duration-150 hover:border-info-300 hover:bg-info-50 hover:text-info-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
+                  >
+                    <i data-lucide="copy" class="h-4 w-4"></i>
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Print"
+                    class="inline-flex h-8 w-8 items-center justify-center rounded-md border border-neutral-300 bg-neutral-0 text-neutral-700 transition-colors duration-150 hover:border-info-300 hover:bg-info-50 hover:text-info-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
+                  >
+                    <i data-lucide="printer" class="h-4 w-4"></i>
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Full screen"
+                    class="inline-flex h-8 w-8 items-center justify-center rounded-md border border-neutral-300 bg-neutral-0 text-neutral-700 transition-colors duration-150 hover:border-info-300 hover:bg-info-50 hover:text-info-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
+                  >
+                    <i data-lucide="expand" class="h-4 w-4"></i>
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Close visualization panel"
+                    class="inline-flex h-8 w-8 items-center justify-center rounded-md border border-neutral-300 bg-neutral-0 text-neutral-700 transition-colors duration-150 hover:border-neutral-400 hover:bg-neutral-100 hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
+                  >
+                    <i data-lucide="x" class="h-4 w-4"></i>
+                  </button>
+                </div>
+              </header>
+
+              <article class="viz-card overflow-hidden rounded-2xl border border-neutral-300 bg-neutral-0 shadow-[0_10px_20px_-16px_rgb(17_24_39_/_15%)]">
+                <div class="border-b border-neutral-200 bg-neutral-50/70 px-3.5 py-3">
+                  <h3 class="text-base">Monthly Revenue Trend</h3>
+                  <p class="mt-1 text-sm text-neutral-700">Line chart showing last 6 months of revenue.</p>
+                </div>
+                <div class="p-3">
+                  <div
+                    id="viz-line-chart"
+                    class="viz-chart h-[280px] w-full overflow-hidden bg-neutral-0"
+                  ></div>
+                </div>
+              </article>
+
+              <article class="viz-card overflow-hidden rounded-2xl border border-neutral-300 bg-neutral-0 shadow-[0_10px_20px_-16px_rgb(17_24_39_/_15%)]">
+                <div class="border-b border-neutral-200 bg-neutral-50/70 px-3.5 py-3">
+                  <h3 class="text-base">Revenue by Region</h3>
+                  <p class="mt-1 text-sm text-neutral-700">Bar chart comparing current quarter performance.</p>
+                </div>
+                <div class="p-3">
+                  <div
+                    id="viz-bar-chart"
+                    class="viz-chart h-[280px] w-full overflow-hidden bg-neutral-0"
+                  ></div>
+                </div>
+              </article>
             </div>
           </section>
         </div>

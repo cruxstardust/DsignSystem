@@ -323,6 +323,22 @@
     color: var(--color-neutral-700);
     font-weight: 600;
   }
+
+  .viz-chart .vega-embed,
+  .viz-chart .vega-embed > div {
+    width: 100%;
+    height: 100%;
+  }
+
+  .viz-chart canvas,
+  .viz-chart svg {
+    display: block;
+    max-width: 100%;
+  }
+
+  .viz-chart .vega-embed summary {
+    display: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
