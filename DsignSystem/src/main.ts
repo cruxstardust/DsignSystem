@@ -109,7 +109,7 @@ class DsChatInput extends HTMLElement {
 
     this.className = 'block w-full'
     this.innerHTML = `
-      <div class="w-full rounded-2xl border border-neutral-200 bg-neutral-0 p-3 shadow-[0_12px_24px_-20px_rgb(30_30_30_/_22%)] transition-shadow duration-150 focus-within:ring-2 focus-within:ring-focus focus-within:ring-offset-2 focus-within:ring-offset-neutral-50 motion-reduce:transition-none">
+      <div class="w-full rounded-2xl border border-neutral-300 border-r-neutral-400 bg-neutral-0 p-3 shadow-[0_8px_16px_-12px_rgb(17_24_39_/_14%)] transition-shadow duration-150 focus-within:ring-2 focus-within:ring-focus focus-within:ring-offset-2 focus-within:ring-offset-neutral-50 motion-reduce:transition-none">
         <label class="sr-only" for="${textareaId}">Message</label>
         <textarea
           id="${textareaId}"
