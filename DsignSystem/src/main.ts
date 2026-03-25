@@ -2,6 +2,7 @@ import './style.css'
 
 type ButtonSize = 'small' | 'medium' | 'large'
 type ButtonColor = 'primary' | 'secondary'
+type AlertVariant = 'success' | 'info' | 'warning' | 'danger'
 
 class DsButton extends HTMLElement {
   private buttonEl: HTMLButtonElement | null = null
@@ -160,3 +161,131 @@ class DsChatInput extends HTMLElement {
 }
 
 customElements.define('ds-chat-input', DsChatInput)
+
+class DsAlert extends HTMLElement {
+  private rendered = false
+  private rootEl: HTMLElement | null = null
+  private iconEl: HTMLElement | null = null
+  private titleEl: HTMLElement | null = null
+  private messageEl: HTMLElement | null = null
+
+  static get observedAttributes(): string[] {
+    return ['variant', 'title']
+  }
+
+  connectedCallback(): void {
+    if (!this.rendered) {
+      this.render()
+    }
+    this.update()
+  }
+
+  attributeChangedCallback(): void {
+    this.update()
+  }
+
+  private render(): void {
+    const message = document.createElement('div')
+    const children = Array.from(this.childNodes)
+    children.forEach((node) => message.appendChild(node))
+
+    const root = document.createElement('article')
+    const icon = document.createElement('span')
+    const content = document.createElement('div')
+    const title = document.createElement('p')
+
+    root.append(icon, content)
+    content.append(title, message)
+
+    this.className = 'block w-full'
+    this.replaceChildren(root)
+
+    this.rootEl = root
+    this.iconEl = icon
+    this.titleEl = title
+    this.messageEl = message
+    this.rendered = true
+  }
+
+  private update(): void {
+    if (!this.rootEl || !this.iconEl || !this.titleEl || !this.messageEl) {
+      return
+    }
+
+    const variant = this.parseVariant(this.getAttribute('variant'))
+    const config = this.variantConfig(variant)
+    const title = this.getAttribute('title') ?? config.defaultTitle
+
+    this.setAttribute('role', variant === 'danger' || variant === 'warning' ? 'alert' : 'status')
+    this.setAttribute('aria-live', variant === 'danger' || variant === 'warning' ? 'assertive' : 'polite')
+
+    this.rootEl.className =
+      `grid grid-cols-[auto_1fr] gap-3 rounded-xl border p-4 shadow-[0_10px_20px_-20px_rgb(30_30_30_/_35%)] ${config.surface}`
+
+    this.iconEl.className =
+      `mt-0.5 inline-flex h-9 w-9 items-center justify-center rounded-full border ${config.icon}`
+    this.iconEl.innerHTML = config.iconSvg
+
+    this.titleEl.className = `m-0 text-sm font-semibold ${config.title}`
+    this.titleEl.textContent = title
+
+    this.messageEl.className = 'mt-1 text-sm leading-6 text-neutral-900 [&_p:last-child]:mb-0'
+  }
+
+  private parseVariant(raw: string | null): AlertVariant {
+    if (raw === 'success' || raw === 'info' || raw === 'warning' || raw === 'danger') {
+      return raw
+    }
+    return 'info'
+  }
+
+  private variantConfig(variant: AlertVariant): {
+    defaultTitle: string
+    surface: string
+    icon: string
+    title: string
+    iconSvg: string
+  } {
+    switch (variant) {
+      case 'success':
+        return {
+          defaultTitle: 'Success',
+          surface: 'border-success-400 bg-success-50',
+          icon: 'border-success-400/45 bg-success-50 text-success-700',
+          title: 'text-success-700',
+          iconSvg:
+            '<svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 5 5L20 7"/></svg>',
+        }
+      case 'warning':
+        return {
+          defaultTitle: 'Warning',
+          surface: 'border-warning-400 bg-warning-50',
+          icon: 'border-warning-400/45 bg-warning-50 text-warning-700',
+          title: 'text-warning-700',
+          iconSvg:
+            '<svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3l-8.47-14.14a2 2 0 0 0-3.42 0Z"/></svg>',
+        }
+      case 'danger':
+        return {
+          defaultTitle: 'Danger',
+          surface: 'border-danger-400 bg-danger-50',
+          icon: 'border-danger-400/45 bg-danger-50 text-danger-700',
+          title: 'text-danger-700',
+          iconSvg:
+            '<svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>',
+        }
+      case 'info':
+      default:
+        return {
+          defaultTitle: 'Info',
+          surface: 'border-info-400 bg-info-50',
+          icon: 'border-info-400/45 bg-info-50 text-info-700',
+          title: 'text-info-700',
+          iconSvg:
+            '<svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>',
+        }
+    }
+  }
+}
+
+customElements.define('ds-alert', DsAlert)
