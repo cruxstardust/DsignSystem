@@ -1655,5 +1655,37 @@ function setupVisualizationPanelToggle(): void {
   setOpenState(false)
 }
 
+function setupHitlInlineAlert(): void {
+  const inlineAlert = document.getElementById('hitl-inline-alert')
+  if (!inlineAlert) {
+    return
+  }
+
+  const render = (isActive: boolean): void => {
+    inlineAlert.classList.toggle('hidden', !isActive)
+  }
+
+  const hasInterrupt = (): boolean => Boolean(document.querySelector('ds-hitl-interrupt'))
+
+  render(hasInterrupt())
+
+  document.addEventListener(
+    'ds-hitl-selection-change',
+    () => {
+      render(true)
+    },
+    true,
+  )
+
+  document.addEventListener(
+    'ds-hitl-accept-all',
+    () => {
+      render(false)
+    },
+    true,
+  )
+}
+
 hydrateIcons(document)
 setupVisualizationPanelToggle()
+setupHitlInlineAlert()

@@ -360,3 +360,25 @@
   background-size: 36px 36px;
   background-position: 0 0, 18px 18px;
 }
+
+.viz-panel-gradient {
+  background-color: var(--color-neutral-50);
+  background-image:
+    radial-gradient(
+      150% 140% at 100% 100%,
+      oklch(0.89 0.075 266.6 / 0.58) 0%,
+      oklch(0.93 0.056 266.6 / 0.42) 24%,
+      oklch(0.96 0.034 266.6 / 0.24) 46%,
+      transparent 72%
+    ),
+    radial-gradient(
+      95% 90% at 92% 92%,
+      oklch(0.90 0.065 266.6 / 0.34) 0%,
+      transparent 62%
+    );
+  background-repeat: no-repeat, no-repeat;
+}
+
+.hitl-inline-alert {
+  position: static;
+}

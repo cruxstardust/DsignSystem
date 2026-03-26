@@ -119,6 +119,15 @@
 
               <section class="shrink-0 py-4" aria-label="Chat input">
                 <div class="mx-auto w-full max-w-4xl px-4 sm:px-6 lg:px-8">
+                  <div
+                    id="hitl-inline-alert"
+                    role="status"
+                    aria-live="polite"
+                    class="hitl-inline-alert mb-2 flex items-center gap-2 rounded-lg border border-warning-400/80 bg-warning-50 px-3 py-2 text-xs text-warning-700 shadow-[0_6px_12px_-10px_rgb(17_24_39_/_25%)]"
+                  >
+                    <i data-lucide="triangle-alert" class="h-3.5 w-3.5"></i>
+                    <span class="font-medium">Human-in-the-loop review is active. Confirm selections to continue.</span>
+                  </div>
                   <ds-chat-input placeholder="Message Dsign AI..."></ds-chat-input>
                 </div>
               </section>
