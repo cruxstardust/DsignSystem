@@ -515,6 +515,236 @@ class DsBotMessage extends HTMLElement {
 
 defineElement('ds-bot-message', DsBotMessage)
 
+const HITL_DATE_ATTRIBUTE_OPTIONS = ['RDD Date', 'SO Date', 'POD Date'] as const
+type HitlDateAttribute = (typeof HITL_DATE_ATTRIBUTE_OPTIONS)[number]
+
+class DsHitlInterrupt extends HTMLElement {
+  private rendered = false
+  private readonly instanceId = `ds-hitl-${Math.random().toString(36).slice(2, 10)}`
+  private versions: string[] = []
+  private selectedDateAttribute: HitlDateAttribute = 'RDD Date'
+  private selectedVersions = new Set<string>()
+
+  static get observedAttributes(): string[] {
+    return ['title', 'description', 'versions', 'selected-date-attribute', 'selected-versions']
+  }
+
+  connectedCallback(): void {
+    this.render()
+  }
+
+  attributeChangedCallback(): void {
+    if (this.rendered) {
+      this.render()
+    }
+  }
+
+  private parseVersions(raw: string | null): string[] {
+    const fallback = ['2026-01-31', '2026-02-28', '2026-03-31', '2026-04-30']
+    if (!raw) {
+      return fallback
+    }
+
+    const parsed = raw
+      .split(',')
+      .map((value) => value.trim())
+      .filter((value) => /^\d{4}-\d{2}-\d{2}$/.test(value))
+
+    return parsed.length > 0 ? parsed : fallback
+  }
+
+  private parseDateAttribute(raw: string | null): HitlDateAttribute {
+    if (raw === 'RDD Date' || raw === 'SO Date' || raw === 'POD Date') {
+      return raw
+    }
+    return 'RDD Date'
+  }
+
+  private parseSelectedVersions(raw: string | null, versions: string[]): Set<string> {
+    if (!raw) {
+      return new Set(versions)
+    }
+
+    const selected = new Set(
+      raw
+        .split(',')
+        .map((value) => value.trim())
+        .filter((value) => versions.includes(value)),
+    )
+
+    return selected.size > 0 ? selected : new Set(versions)
+  }
+
+  private buildDateAttributeOptions(): string {
+    return HITL_DATE_ATTRIBUTE_OPTIONS.map((option) => {
+      const checked = option === this.selectedDateAttribute ? 'checked' : ''
+      return `
+        <label class="flex items-center gap-2 rounded-lg border border-neutral-300 bg-neutral-0 px-3 py-2 text-sm font-medium text-neutral-900">
+          <input
+            type="radio"
+            name="${this.instanceId}-date-attribute"
+            value="${option}"
+            ${checked}
+            class="h-4 w-4 accent-brand"
+          />
+          <span>${option}</span>
+        </label>
+      `
+    }).join('')
+  }
+
+  private buildVersionOptions(): string {
+    return this.versions
+      .map((version) => {
+        const checked = this.selectedVersions.has(version) ? 'checked' : ''
+        return `
+          <label class="flex items-center gap-2 rounded-lg border border-neutral-300 bg-neutral-0 px-3 py-2 text-sm text-neutral-900">
+            <input
+              type="checkbox"
+              name="${this.instanceId}-version"
+              value="${version}"
+              ${checked}
+              class="h-4 w-4 accent-info-700"
+            />
+            <span class="font-medium">${version}</span>
+          </label>
+        `
+      })
+      .join('')
+  }
+
+  private payload(): { dateAttribute: HitlDateAttribute; versions: string[] } {
+    return {
+      dateAttribute: this.selectedDateAttribute,
+      versions: Array.from(this.selectedVersions),
+    }
+  }
+
+  private emitSelection(eventName: string): void {
+    this.dispatchEvent(
+      new CustomEvent(eventName, {
+        detail: this.payload(),
+        bubbles: true,
+        composed: true,
+      }),
+    )
+  }
+
+  private attachEventHandlers(): void {
+    const dateInputs = this.querySelectorAll<HTMLInputElement>(
+      `input[name="${this.instanceId}-date-attribute"]`,
+    )
+    dateInputs.forEach((input) => {
+      input.addEventListener('change', () => {
+        this.selectedDateAttribute = this.parseDateAttribute(input.value)
+        this.emitSelection('ds-hitl-selection-change')
+      })
+    })
+
+    const versionInputs = this.querySelectorAll<HTMLInputElement>(`input[name="${this.instanceId}-version"]`)
+    versionInputs.forEach((input) => {
+      input.addEventListener('change', () => {
+        if (input.checked) {
+          this.selectedVersions.add(input.value)
+        } else {
+          this.selectedVersions.delete(input.value)
+        }
+        this.emitSelection('ds-hitl-selection-change')
+      })
+    })
+
+    const acceptAllButton = this.querySelector<HTMLButtonElement>('[data-hitl-action="accept-all"]')
+    acceptAllButton?.addEventListener('click', () => {
+      this.emitSelection('ds-hitl-accept-all')
+    })
+
+    const changeManuallyButton = this.querySelector<HTMLButtonElement>(
+      '[data-hitl-action="change-manually"]',
+    )
+    changeManuallyButton?.addEventListener('click', () => {
+      this.emitSelection('ds-hitl-change-manually')
+    })
+  }
+
+  private render(): void {
+    const title = this.getAttribute('title') ?? 'Human Review Required'
+    const description =
+      this.getAttribute('description') ??
+      'Conversation paused. Confirm these values before the workflow continues.'
+
+    this.versions = this.parseVersions(this.getAttribute('versions'))
+    this.selectedDateAttribute = this.parseDateAttribute(this.getAttribute('selected-date-attribute'))
+    this.selectedVersions = this.parseSelectedVersions(
+      this.getAttribute('selected-versions'),
+      this.versions,
+    )
+
+    this.className = 'block w-full'
+    this.innerHTML = `
+      <article class="w-full rounded-2xl border border-warning-400 bg-neutral-0 shadow-[0_10px_20px_-16px_rgb(17_24_39_/_14%)]">
+        <header class="grid gap-2 border-b border-neutral-200 bg-warning-50/60 px-4 py-3">
+          <div class="flex items-start gap-3">
+            <span class="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-warning-400/45 bg-warning-50 text-warning-700">
+              ${iconTag('triangle-alert', 'h-4 w-4')}
+            </span>
+            <div>
+              <p class="m-0 text-sm font-semibold text-warning-700">${title}</p>
+              <p class="m-0 mt-1 text-sm text-neutral-700">${description}</p>
+            </div>
+          </div>
+        </header>
+
+        <div class="grid gap-4 px-4 py-4">
+          <section>
+            <p class="m-0 text-sm font-semibold text-neutral-900">Date Attribute Selector</p>
+            <p class="m-0 mt-1 text-xs text-neutral-700">Select one date attribute to continue.</p>
+            <fieldset class="mt-2 grid gap-2 sm:grid-cols-3">
+              ${this.buildDateAttributeOptions()}
+            </fieldset>
+          </section>
+
+          <section>
+            <p class="m-0 text-sm font-semibold text-neutral-900">Version Selector</p>
+            <p class="m-0 mt-1 text-xs text-neutral-700">Select one or more versions (yyyy-mm-dd).</p>
+            <fieldset class="mt-2 grid max-h-36 gap-2 overflow-y-auto pr-1 sm:grid-cols-2">
+              ${this.buildVersionOptions()}
+            </fieldset>
+          </section>
+
+          <div class="flex flex-wrap items-center justify-between gap-3 border-t border-neutral-200 pt-3">
+            <p class="m-0 text-xs text-neutral-700">
+              Selected versions: <span class="font-semibold text-neutral-900">${this.selectedVersions.size}</span>
+            </p>
+
+            <div class="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                data-hitl-action="change-manually"
+                class="inline-flex items-center justify-center rounded-[0.5rem] border border-info-700 bg-transparent px-4 py-2 text-sm font-semibold text-info-700 transition-colors duration-150 hover:bg-info-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
+              >
+                Change Manually
+              </button>
+              <button
+                type="button"
+                data-hitl-action="accept-all"
+                class="inline-flex items-center justify-center rounded-[0.5rem] border border-brand bg-brand px-4 py-2 text-sm font-semibold text-neutral-0 transition-colors duration-150 hover:border-neutral-700 hover:bg-neutral-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
+              >
+                Accept All
+              </button>
+            </div>
+          </div>
+        </div>
+      </article>
+    `
+
+    this.attachEventHandlers()
+    hydrateIcons(this)
+    this.rendered = true
+  }
+}
+
+defineElement('ds-hitl-interrupt', DsHitlInterrupt)
+
 function buildLineChartSpec(): Record<string, unknown> {
   return {
     $schema: 'https://vega.github.io/schema/vega-lite/v6.json',
