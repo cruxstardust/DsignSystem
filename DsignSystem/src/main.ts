@@ -4,6 +4,7 @@ import embed from 'vega-embed'
 import {
   ChartArea,
   CircleCheck,
+  CircleDashed,
   CircleStop,
   CircleX,
   Copy,
@@ -29,6 +30,7 @@ type IconName =
   | 'mic'
   | 'send-horizontal'
   | 'circle-check'
+  | 'circle-dashed'
   | 'circle-stop'
   | 'triangle-alert'
   | 'circle-x'
@@ -52,6 +54,7 @@ function iconTag(name: IconName, className: string): string {
 const lucideIcons = {
   ChartArea,
   CircleCheck,
+  CircleDashed,
   CircleStop,
   CircleX,
   Copy,
@@ -239,6 +242,171 @@ class DsChatInput extends HTMLElement {
 }
 
 defineElement('ds-chat-input', DsChatInput)
+
+function formatDuration(totalSeconds: number): string {
+  const normalized = Math.max(0, Math.floor(totalSeconds))
+  const hours = Math.floor(normalized / 3600)
+  const minutes = Math.floor((normalized % 3600) / 60)
+  const seconds = normalized % 60
+
+  if (hours > 0) {
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+  }
+
+  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+}
+
+class DsAgentIndicator extends HTMLElement {
+  private rendered = false
+  private totalTimeEl: HTMLElement | null = null
+  private taskLabelEl: HTMLElement | null = null
+  private taskTimeEl: HTMLElement | null = null
+  private intervalId: number | null = null
+  private totalSeconds = 0
+  private taskSeconds = 0
+  private lastTask = ''
+  private activeState = false
+  private lastTotalSecondsAttr: string | null = null
+  private lastTaskSecondsAttr: string | null = null
+
+  static get observedAttributes(): string[] {
+    return ['active', 'current-task', 'total-seconds', 'task-seconds']
+  }
+
+  connectedCallback(): void {
+    if (!this.rendered) {
+      this.render()
+    }
+    this.update()
+  }
+
+  disconnectedCallback(): void {
+    this.stopTimer()
+  }
+
+  attributeChangedCallback(): void {
+    this.update()
+  }
+
+  private render(): void {
+    this.className = 'block w-full'
+    this.innerHTML = `
+      <div class="agent-inline-indicator mb-2 rounded-lg border border-neutral-300/90 bg-neutral-0 px-2.5 py-1.5 shadow-[0_6px_12px_-10px_rgb(17_24_39_/_16%)]">
+        <div class="flex items-center gap-2">
+          <span class="agent-inline-indicator__icon inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-info-200 bg-info-50 text-info-700">
+            ${iconTag('circle-dashed', 'h-3 w-3')}
+          </span>
+
+          <div class="min-w-0 flex flex-1 items-center justify-between gap-3 text-xs leading-5 text-neutral-700">
+            <p class="m-0 min-w-0 flex-1 truncate whitespace-nowrap">
+              <span class="text-neutral-600">Task</span>
+              <span data-agent-task class="ml-1 font-medium text-neutral-900">Working...</span>
+              <span class="ml-1 text-neutral-600">(</span>
+              <span data-agent-task-time class="font-semibold text-neutral-900">00:00</span>
+              <span class="text-neutral-600">)</span>
+            </p>
+
+            <p class="m-0 whitespace-nowrap">
+              <span class="text-neutral-600">Total</span>
+              <span data-agent-total class="ml-1 font-semibold text-neutral-900">00:00</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    `
+
+    this.totalTimeEl = this.querySelector('[data-agent-total]')
+    this.taskLabelEl = this.querySelector('[data-agent-task]')
+    this.taskTimeEl = this.querySelector('[data-agent-task-time]')
+
+    hydrateIcons(this)
+    this.rendered = true
+  }
+
+  private isActive(): boolean {
+    const raw = this.getAttribute('active')
+    if (raw === null) {
+      return false
+    }
+    return raw !== 'false'
+  }
+
+  private parseSeconds(value: string | null): number {
+    const parsed = Number.parseInt(value ?? '0', 10)
+    return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0
+  }
+
+  private startTimer(): void {
+    if (this.intervalId !== null) {
+      return
+    }
+
+    this.intervalId = window.setInterval(() => {
+      this.totalSeconds += 1
+      this.taskSeconds += 1
+      this.renderValues()
+    }, 1000)
+  }
+
+  private stopTimer(): void {
+    if (this.intervalId === null) {
+      return
+    }
+
+    window.clearInterval(this.intervalId)
+    this.intervalId = null
+  }
+
+  private renderValues(): void {
+    if (!this.totalTimeEl || !this.taskLabelEl || !this.taskTimeEl) {
+      return
+    }
+
+    this.totalTimeEl.textContent = formatDuration(this.totalSeconds)
+    this.taskTimeEl.textContent = formatDuration(this.taskSeconds)
+    this.taskLabelEl.textContent = this.getAttribute('current-task')?.trim() || 'Working...'
+  }
+
+  private update(): void {
+    if (!this.rendered) {
+      return
+    }
+
+    const active = this.isActive()
+    const currentTask = this.getAttribute('current-task')?.trim() || 'Working...'
+    this.hidden = !active
+    this.setAttribute('role', 'status')
+    this.setAttribute('aria-live', 'polite')
+    this.toggleAttribute('aria-hidden', !active)
+
+    if (!active) {
+      this.stopTimer()
+      this.activeState = false
+      return
+    }
+
+    const totalSecondsAttr = this.getAttribute('total-seconds')
+    if (!this.activeState || totalSecondsAttr !== this.lastTotalSecondsAttr) {
+      this.totalSeconds = this.parseSeconds(totalSecondsAttr)
+      this.lastTotalSecondsAttr = totalSecondsAttr
+    }
+
+    const explicitTaskSeconds = this.getAttribute('task-seconds')
+    if (!this.activeState || explicitTaskSeconds !== this.lastTaskSecondsAttr) {
+      this.taskSeconds = this.parseSeconds(explicitTaskSeconds)
+    } else if (this.lastTask && this.lastTask !== currentTask) {
+      this.taskSeconds = 0
+    }
+
+    this.lastTaskSecondsAttr = explicitTaskSeconds
+    this.lastTask = currentTask
+    this.activeState = true
+    this.renderValues()
+    this.startTimer()
+  }
+}
+
+defineElement('ds-agent-indicator', DsAgentIndicator)
 
 class DsAlert extends HTMLElement {
   private rendered = false

@@ -382,3 +382,19 @@
 .hitl-inline-alert {
   position: static;
 }
+
+.agent-inline-indicator__icon svg {
+  animation: ds-agent-indicator-spin 2.4s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .agent-inline-indicator__icon svg {
+    animation: none;
+  }
+}
+
+@keyframes ds-agent-indicator-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
