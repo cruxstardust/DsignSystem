@@ -36,6 +36,8 @@ type IconName =
   | 'copy'
   | 'thumbs-up'
   | 'thumbs-down'
+  | 'settings'
+  | 'x'
 
 function defineElement(name: string, ctor: CustomElementConstructor): void {
   if (!customElements.get(name)) {
@@ -362,6 +364,336 @@ class DsAlert extends HTMLElement {
 }
 
 defineElement('ds-alert', DsAlert)
+
+class DsModal extends HTMLElement {
+  private rendered = false
+  private readonly baseId = `ds-modal-${Math.random().toString(36).slice(2, 10)}`
+  private isOpen = false
+  private overlayEl: HTMLDivElement | null = null
+  private panelEl: HTMLElement | null = null
+  private titleEl: HTMLElement | null = null
+  private descriptionEl: HTMLElement | null = null
+  private footerEl: HTMLElement | null = null
+  private previousActiveElement: HTMLElement | null = null
+  private removeDocumentKeydownListener: (() => void) | null = null
+
+  static get observedAttributes(): string[] {
+    return ['open', 'title', 'description', 'close-on-overlay']
+  }
+
+  connectedCallback(): void {
+    if (!this.rendered) {
+      this.render()
+    }
+    this.syncState()
+  }
+
+  disconnectedCallback(): void {
+    this.removeGlobalListeners()
+    if (this.isOpen) {
+      this.releaseBodyScrollLock()
+    }
+  }
+
+  attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null): void {
+    if (!this.rendered || oldValue === newValue) {
+      return
+    }
+
+    if (name === 'open') {
+      this.syncState(true)
+      return
+    }
+    this.syncState()
+  }
+
+  showModal(): void {
+    this.setAttribute('open', '')
+  }
+
+  closeModal(): void {
+    this.removeAttribute('open')
+  }
+
+  private closeOnOverlayClick(): boolean {
+    return this.getAttribute('close-on-overlay') !== 'false'
+  }
+
+  private render(): void {
+    const bodyFragment = document.createDocumentFragment()
+    const footerFragment = document.createDocumentFragment()
+
+    const children = Array.from(this.childNodes)
+    children.forEach((node) => {
+      if (node instanceof HTMLElement && node.getAttribute('slot') === 'footer') {
+        node.removeAttribute('slot')
+        footerFragment.appendChild(node)
+        return
+      }
+      bodyFragment.appendChild(node)
+    })
+
+    const overlay = document.createElement('div')
+    overlay.className =
+      'fixed inset-0 z-50 flex hidden items-center justify-center bg-neutral-900/35 p-3 sm:p-6'
+
+    const panel = document.createElement('section')
+    panel.id = `${this.baseId}-panel`
+    panel.className =
+      'w-full max-w-2xl overflow-hidden rounded-2xl border border-neutral-300 bg-neutral-0 shadow-[0_24px_48px_-24px_rgb(17_24_39_/_45%)]'
+    panel.tabIndex = -1
+    panel.setAttribute('role', 'dialog')
+    panel.setAttribute('aria-modal', 'true')
+
+    const header = document.createElement('header')
+    header.className =
+      'flex items-start justify-between gap-3 border-b border-neutral-200 bg-neutral-50/80 px-4 py-3 sm:px-5'
+
+    const titleWrap = document.createElement('div')
+    titleWrap.className = 'min-w-0'
+
+    const title = document.createElement('h2')
+    title.id = `${this.baseId}-title`
+    title.className = 'm-0 text-lg font-semibold text-neutral-900'
+
+    const description = document.createElement('p')
+    description.id = `${this.baseId}-description`
+    description.className = 'm-0 mt-1 text-sm text-neutral-700'
+
+    const closeButton = document.createElement('button')
+    closeButton.type = 'button'
+    closeButton.setAttribute('aria-label', 'Close modal')
+    closeButton.setAttribute('data-modal-close', '')
+    closeButton.className =
+      'inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-neutral-300 bg-neutral-0 text-neutral-700 transition-colors duration-150 hover:border-neutral-400 hover:bg-neutral-100 hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none'
+    closeButton.innerHTML = iconTag('x', 'h-4 w-4')
+
+    titleWrap.append(title, description)
+    header.append(titleWrap, closeButton)
+
+    const body = document.createElement('div')
+    body.className = 'max-h-[65vh] overflow-y-auto px-4 py-4 sm:px-5'
+    body.append(bodyFragment)
+
+    const footer = document.createElement('footer')
+    footer.className =
+      'flex flex-wrap items-center justify-end gap-2 border-t border-neutral-200 bg-neutral-50/70 px-4 py-3 sm:px-5'
+    footer.append(footerFragment)
+
+    panel.append(header, body, footer)
+    overlay.append(panel)
+
+    this.className = 'contents'
+    this.replaceChildren(overlay)
+
+    this.overlayEl = overlay
+    this.panelEl = panel
+    this.titleEl = title
+    this.descriptionEl = description
+    this.footerEl = footer
+
+    this.attachEventHandlers()
+    hydrateIcons(this)
+    this.rendered = true
+  }
+
+  private attachEventHandlers(): void {
+    this.overlayEl?.addEventListener('click', (event) => {
+      if (event.target !== this.overlayEl || !this.closeOnOverlayClick()) {
+        return
+      }
+      this.closeModal()
+    })
+
+    this.querySelectorAll<HTMLElement>('[data-modal-close]').forEach((element) => {
+      element.addEventListener('click', () => {
+        this.closeModal()
+      })
+    })
+  }
+
+  private focusableElements(): HTMLElement[] {
+    if (!this.panelEl) {
+      return []
+    }
+
+    const selector =
+      'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+
+    return Array.from(this.panelEl.querySelectorAll<HTMLElement>(selector)).filter((element) => {
+      if (element.hasAttribute('disabled')) {
+        return false
+      }
+      const style = window.getComputedStyle(element)
+      return style.display !== 'none' && style.visibility !== 'hidden'
+    })
+  }
+
+  private focusInitialElement(): void {
+    const autofocusTarget = this.panelEl?.querySelector<HTMLElement>('[autofocus]')
+    if (autofocusTarget) {
+      autofocusTarget.focus()
+      return
+    }
+
+    const focusable = this.focusableElements()
+    if (focusable.length > 0) {
+      focusable[0]?.focus()
+      return
+    }
+    this.panelEl?.focus()
+  }
+
+  private trapTabKey(event: KeyboardEvent): void {
+    const focusable = this.focusableElements()
+    if (focusable.length === 0) {
+      event.preventDefault()
+      this.panelEl?.focus()
+      return
+    }
+
+    const first = focusable[0]
+    const last = focusable[focusable.length - 1]
+    const activeElement = document.activeElement as HTMLElement | null
+    const activeInsidePanel = Boolean(activeElement && this.panelEl?.contains(activeElement))
+
+    if (!activeInsidePanel) {
+      event.preventDefault()
+      if (event.shiftKey) {
+        last?.focus()
+      } else {
+        first?.focus()
+      }
+      return
+    }
+
+    if (event.shiftKey && activeElement === first) {
+      event.preventDefault()
+      last?.focus()
+      return
+    }
+
+    if (!event.shiftKey && activeElement === last) {
+      event.preventDefault()
+      first?.focus()
+    }
+  }
+
+  private addGlobalListeners(): void {
+    this.removeGlobalListeners()
+
+    const handleDocumentKeydown = (event: KeyboardEvent): void => {
+      if (!this.isOpen) {
+        return
+      }
+
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        this.closeModal()
+        return
+      }
+
+      if (event.key === 'Tab') {
+        this.trapTabKey(event)
+      }
+    }
+
+    document.addEventListener('keydown', handleDocumentKeydown)
+    this.removeDocumentKeydownListener = () => {
+      document.removeEventListener('keydown', handleDocumentKeydown)
+    }
+  }
+
+  private removeGlobalListeners(): void {
+    this.removeDocumentKeydownListener?.()
+    this.removeDocumentKeydownListener = null
+  }
+
+  private applyBodyScrollLock(): void {
+    const currentCount = Number(document.body.dataset.dsModalOpenCount ?? '0')
+    const nextCount = currentCount + 1
+    document.body.dataset.dsModalOpenCount = String(nextCount)
+    if (nextCount === 1) {
+      document.body.style.overflow = 'hidden'
+    }
+  }
+
+  private releaseBodyScrollLock(): void {
+    const currentCount = Number(document.body.dataset.dsModalOpenCount ?? '0')
+    if (currentCount <= 1) {
+      delete document.body.dataset.dsModalOpenCount
+      document.body.style.removeProperty('overflow')
+      return
+    }
+    document.body.dataset.dsModalOpenCount = String(currentCount - 1)
+  }
+
+  private syncState(openChanged = false): void {
+    if (!this.overlayEl || !this.panelEl || !this.titleEl || !this.descriptionEl || !this.footerEl) {
+      return
+    }
+
+    const title = this.getAttribute('title')?.trim() || 'Dialog'
+    const description = this.getAttribute('description')?.trim() || ''
+
+    this.titleEl.textContent = title
+    this.descriptionEl.textContent = description
+    this.descriptionEl.classList.toggle('hidden', description.length === 0)
+    this.footerEl.classList.toggle('hidden', this.footerEl.children.length === 0)
+
+    this.panelEl.setAttribute('aria-labelledby', this.titleEl.id)
+    if (description.length > 0) {
+      this.panelEl.setAttribute('aria-describedby', this.descriptionEl.id)
+    } else {
+      this.panelEl.removeAttribute('aria-describedby')
+    }
+
+    const nextOpen = this.hasAttribute('open')
+    this.overlayEl.classList.toggle('hidden', !nextOpen)
+    this.overlayEl.setAttribute('aria-hidden', String(!nextOpen))
+
+    if (nextOpen === this.isOpen && !openChanged) {
+      return
+    }
+
+    if (nextOpen) {
+      this.previousActiveElement = document.activeElement as HTMLElement | null
+      this.applyBodyScrollLock()
+      this.addGlobalListeners()
+      requestAnimationFrame(() => {
+        this.focusInitialElement()
+      })
+      this.dispatchEvent(
+        new CustomEvent('ds-modal-open', {
+          bubbles: true,
+          composed: true,
+        }),
+      )
+    } else {
+      this.removeGlobalListeners()
+      this.releaseBodyScrollLock()
+
+      const restoreTarget = this.previousActiveElement
+      this.previousActiveElement = null
+      if (restoreTarget instanceof HTMLElement) {
+        requestAnimationFrame(() => {
+          restoreTarget.focus()
+        })
+      }
+
+      this.dispatchEvent(
+        new CustomEvent('ds-modal-close', {
+          bubbles: true,
+          composed: true,
+        }),
+      )
+    }
+
+    this.isOpen = nextOpen
+  }
+}
+
+defineElement('ds-modal', DsModal)
 
 function messageActionButton(iconName: IconName, label: string, tone: 'neutral' | 'info' = 'neutral'): string {
   const toneHover = tone === 'info' ? 'hover:bg-info-100' : 'hover:bg-neutral-100'
@@ -1701,6 +2033,20 @@ function setupHitlInlineAlert(): void {
   )
 }
 
+function setupSettingsModal(): void {
+  const settingsButton = document.getElementById('open-settings-modal')
+  const settingsModal = document.getElementById('settings-modal')
+
+  if (!(settingsButton instanceof HTMLButtonElement) || !(settingsModal instanceof DsModal)) {
+    return
+  }
+
+  settingsButton.addEventListener('click', () => {
+    settingsModal.showModal()
+  })
+}
+
 hydrateIcons(document)
 setupVisualizationPanelToggle()
 setupHitlInlineAlert()
+setupSettingsModal()

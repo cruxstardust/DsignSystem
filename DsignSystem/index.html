@@ -52,8 +52,11 @@
           <div class="flex items-center justify-between gap-3 px-1">
             <p class="m-0 text-sm font-semibold text-neutral-900">Alex Mercer</p>
             <button
+              id="open-settings-modal"
               type="button"
               aria-label="Settings"
+              aria-haspopup="dialog"
+              aria-controls="settings-modal"
               class="inline-flex h-8 w-8 items-center justify-center rounded-md text-neutral-700 transition-colors duration-150 hover:bg-neutral-100 hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
             >
               <i data-lucide="settings" class="h-4 w-4"></i>
@@ -225,6 +228,89 @@
         </div>
       </main>
     </section>
+
+    <ds-modal
+      id="settings-modal"
+      title="Workspace Settings"
+      description="Adjust notifications and review behavior for this workspace."
+    >
+      <div class="grid gap-3">
+        <label
+          class="flex items-center justify-between gap-4 rounded-xl border border-neutral-200 bg-neutral-50/70 px-3.5 py-3 transition-colors duration-150 hover:border-neutral-300 hover:bg-neutral-50 motion-reduce:transition-none"
+        >
+          <span class="flex min-w-0 items-start gap-3">
+            <span class="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-info-200 bg-info-50 text-info-700">
+              <i data-lucide="settings" class="h-4 w-4"></i>
+            </span>
+            <span class="min-w-0">
+              <span class="block text-sm font-semibold text-neutral-900">Auto-save prompt drafts</span>
+              <span class="mt-1 block text-xs text-neutral-700">Keep unsent input if you leave the page.</span>
+            </span>
+          </span>
+          <span class="relative inline-flex shrink-0 items-center">
+            <input type="checkbox" class="peer sr-only" checked />
+            <span class="h-6 w-11 rounded-full border border-neutral-300 bg-neutral-200 transition-colors duration-150 peer-checked:border-info-700 peer-checked:bg-info-700 motion-reduce:transition-none"></span>
+            <span class="pointer-events-none absolute left-0.5 h-5 w-5 rounded-full bg-neutral-0 shadow-[0_2px_6px_rgb(17_24_39_/_24%)] transition-transform duration-150 peer-checked:translate-x-5 motion-reduce:transition-none"></span>
+          </span>
+        </label>
+
+        <label
+          class="flex items-center justify-between gap-4 rounded-xl border border-neutral-200 bg-neutral-50/70 px-3.5 py-3 transition-colors duration-150 hover:border-neutral-300 hover:bg-neutral-50 motion-reduce:transition-none"
+        >
+          <span class="flex min-w-0 items-start gap-3">
+            <span class="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-success-200 bg-success-50 text-success-700">
+              <i data-lucide="circle-check" class="h-4 w-4"></i>
+            </span>
+            <span class="min-w-0">
+              <span class="block text-sm font-semibold text-neutral-900">Enable release notifications</span>
+              <span class="mt-1 block text-xs text-neutral-700">Get alerts when a new model update ships.</span>
+            </span>
+          </span>
+          <span class="relative inline-flex shrink-0 items-center">
+            <input type="checkbox" class="peer sr-only" checked />
+            <span class="h-6 w-11 rounded-full border border-neutral-300 bg-neutral-200 transition-colors duration-150 peer-checked:border-info-700 peer-checked:bg-info-700 motion-reduce:transition-none"></span>
+            <span class="pointer-events-none absolute left-0.5 h-5 w-5 rounded-full bg-neutral-0 shadow-[0_2px_6px_rgb(17_24_39_/_24%)] transition-transform duration-150 peer-checked:translate-x-5 motion-reduce:transition-none"></span>
+          </span>
+        </label>
+
+        <label
+          class="flex items-center justify-between gap-4 rounded-xl border border-neutral-200 bg-neutral-50/70 px-3.5 py-3 transition-colors duration-150 hover:border-neutral-300 hover:bg-neutral-50 motion-reduce:transition-none"
+        >
+          <span class="flex min-w-0 items-start gap-3">
+            <span class="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-warning-300 bg-warning-50 text-warning-700">
+              <i data-lucide="info" class="h-4 w-4"></i>
+            </span>
+            <span class="min-w-0">
+              <span class="block text-sm font-semibold text-neutral-900">Require HITL confirmation</span>
+              <span class="mt-1 block text-xs text-neutral-700">Pause output until manual review is accepted.</span>
+            </span>
+          </span>
+          <span class="relative inline-flex shrink-0 items-center">
+            <input type="checkbox" class="peer sr-only" />
+            <span class="h-6 w-11 rounded-full border border-neutral-300 bg-neutral-200 transition-colors duration-150 peer-checked:border-info-700 peer-checked:bg-info-700 motion-reduce:transition-none"></span>
+            <span class="pointer-events-none absolute left-0.5 h-5 w-5 rounded-full bg-neutral-0 shadow-[0_2px_6px_rgb(17_24_39_/_24%)] transition-transform duration-150 peer-checked:translate-x-5 motion-reduce:transition-none"></span>
+          </span>
+        </label>
+      </div>
+
+      <div slot="footer" class="flex w-full flex-wrap items-center justify-end gap-2">
+        <button
+          type="button"
+          data-modal-close
+          class="inline-flex items-center justify-center rounded-[0.5rem] border border-neutral-300 bg-neutral-0 px-4 py-2 text-sm font-semibold text-neutral-900 transition-colors duration-150 hover:border-neutral-400 hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          data-modal-close
+          class="inline-flex items-center justify-center rounded-[0.5rem] border border-brand bg-brand px-4 py-2 text-sm font-semibold text-neutral-0 transition-colors duration-150 hover:border-neutral-700 hover:bg-neutral-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
+        >
+          Save Settings
+        </button>
+      </div>
+    </ds-modal>
+
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
