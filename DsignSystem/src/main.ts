@@ -4,6 +4,7 @@ import embed from 'vega-embed'
 import {
   ChartArea,
   CircleCheck,
+  CircleStop,
   CircleX,
   Copy,
   createIcons,
@@ -27,6 +28,7 @@ type IconName =
   | 'mic'
   | 'send-horizontal'
   | 'circle-check'
+  | 'circle-stop'
   | 'triangle-alert'
   | 'circle-x'
   | 'info'
@@ -47,6 +49,7 @@ function iconTag(name: IconName, className: string): string {
 const lucideIcons = {
   ChartArea,
   CircleCheck,
+  CircleStop,
   CircleX,
   Copy,
   Expand,
@@ -205,13 +208,23 @@ class DsChatInput extends HTMLElement {
             </button>
           </div>
 
-          <button
-            type="button"
-            class="inline-flex items-center gap-2 rounded-[0.5rem] border border-brand bg-brand px-5 py-2.5 text-sm font-semibold text-neutral-0 transition-colors duration-150 hover:border-neutral-700 hover:bg-neutral-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
-          >
-            Send
-            ${iconTag('send-horizontal', 'h-3.5 w-3.5')}
-          </button>
+          <div class="flex items-center gap-2">
+            <button
+              type="button"
+              class="inline-flex items-center gap-2 rounded-[0.5rem] border border-danger-300 bg-danger-50 px-3.5 py-2.5 text-sm font-semibold text-danger-700 transition-colors duration-150 hover:border-danger-400 hover:bg-danger-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
+            >
+              ${iconTag('circle-stop', 'h-3.5 w-3.5')}
+              Stop Generation
+            </button>
+
+            <button
+              type="button"
+              class="inline-flex items-center gap-2 rounded-[0.5rem] border border-brand bg-brand px-5 py-2.5 text-sm font-semibold text-neutral-0 transition-colors duration-150 hover:border-neutral-700 hover:bg-neutral-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
+            >
+              Send
+              ${iconTag('send-horizontal', 'h-3.5 w-3.5')}
+            </button>
+          </div>
         </div>
       </div>
     `
